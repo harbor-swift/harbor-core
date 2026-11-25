@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Zaid Rahhawi
+// SPDX-License-Identifier: MIT
+// See LICENSE for license information.
+
 public import Persistence
 
 /// Runs each transaction's closure on the scope a test gives it, with no store behind it.
