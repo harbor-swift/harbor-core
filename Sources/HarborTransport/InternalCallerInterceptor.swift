@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Zaid Rahhawi
+// SPDX-License-Identifier: MIT
+// See LICENSE for license information.
+
 public import GRPCCore
 import GRPCNIOTransportHTTP2
 public import Logging
@@ -12,7 +16,9 @@ public struct InternalCallerInterceptor: ServerInterceptor {
     private let callers: [MethodDescriptor: Set<String>]
     private let logger: Logger
 
-    /// - Parameter callers: each internal RPC, and the identities of the processes that may call it.
+    /// - Parameters:
+    ///   - callers: each internal RPC, and the identities of the processes that may call it.
+    ///   - logger: where each refused call is logged, at `warning`.
     public init(callers: [MethodDescriptor: Set<String>], logger: Logger) {
         self.callers = callers.mapValues { Set($0.map { $0.lowercased() }) }
         self.logger = logger

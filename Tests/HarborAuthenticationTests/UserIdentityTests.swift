@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Zaid Rahhawi
+// SPDX-License-Identifier: MIT
+// See LICENSE for license information.
+
 import HarborAuthentication
 import JWTKit
 import Testing
@@ -9,6 +13,21 @@ import Foundation
 #endif
 
 struct UserIdentityTests {
+    /// A claim's value, as JSON writes it.
+    private enum Claim: Decodable, Equatable {
+        case string(String)
+        case number(Double)
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            do {
+                self = .string(try container.decode(String.self))
+            } catch DecodingError.typeMismatch {
+                self = .number(try container.decode(Double.self))
+            }
+        }
+    }
+
     private let userID = UUID(uuidString: "0193A1B2-C3D4-7E5F-8A9B-0C1D2E3F4A5B")!
 
     private func identity(expiringIn lifetime: TimeInterval) -> UserIdentity {
@@ -28,11 +47,11 @@ struct UserIdentityTests {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         let json = try encoder.encode(identity)
-        let claims = try JSONSerialization.jsonObject(with: json) as? [String: Any]
+        let claims = try JSONDecoder().decode([String: Claim].self, from: json)
 
-        #expect(Set(claims?.keys ?? [:].keys) == ["sub", "role", "iss", "iat", "exp"])
-        #expect(claims?["sub"] as? String == userID.uuidString.lowercased())
-        #expect(claims?["role"] as? String == "user")
-        #expect(claims?["iss"] as? String == "harbor-auth")
+        #expect(Set(claims.keys) == ["sub", "role", "iss", "iat", "exp"])
+        #expect(claims["sub"] == .string(userID.uuidString.lowercased()))
+        #expect(claims["role"] == .string("user"))
+        #expect(claims["iss"] == .string("harbor-auth"))
     }
 }
